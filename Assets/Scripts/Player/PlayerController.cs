@@ -45,6 +45,8 @@ public class PlayerController : MonoBehaviour
         OnWall
     }
 
+    private EPlayerState m_currentState;
+
 
 	void Awake()
 	{
@@ -59,6 +61,7 @@ public class PlayerController : MonoBehaviour
         m_gravity = gravity;
         m_originalScale = spriteChild.localScale;
         m_animator = spriteChild.GetComponent<Animator>();
+        m_currentState = EPlayerState.Idle;
 	}
 
 
@@ -92,23 +95,25 @@ public class PlayerController : MonoBehaviour
 		if( m_controller.isGrounded ) {
             m_groundedRemember = groundedRememberTime;
             m_velocity.y = 0;
+            m_currentState = EPlayerState.Idle;
 
             if(!m_controller.collisionState.wasGroundedLastFrame) {
                 StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_groundingScaleMultiplier));
             }
         }
 
-        Move();
-        Jump();
+        ProcessState(m_currentState);
         AnimationHandling();
 
-
 		// apply horizontal speed smoothing it. dont really do this with Lerp. Use SmoothDamp or something that provides more control
-		var smoothedMovementFactor = m_controller.isGrounded ? groundDamping : inAirDamping; // how fast do we change direction?
+		var smoothedMovementFactor = m_controller.isGrounded ? groundDamping : inAirDamping;
 		m_velocity.x = Mathf.Lerp( m_velocity.x, m_normalizedHorizontalSpeed * runSpeed, Time.deltaTime * smoothedMovementFactor );
 
 		// apply gravity before moving
-		m_velocity.y += gravity * Time.deltaTime;
+        // m_velocity.y += gravity * Time.deltaTime;
+        
+        /* limiting gravity */
+        m_velocity.y = Mathf.Max(m_gravity, m_velocity.y + (m_gravity * Time.deltaTime + (.5f * m_gravity * (Time.deltaTime * Time.deltaTime))));
 
 		// if holding down bump up our movement amount and turn off one way platform detection for a frame.
 		// this lets us jump down through one way platforms
@@ -124,12 +129,30 @@ public class PlayerController : MonoBehaviour
 		m_velocity = m_controller.velocity;
 	}
 
+    private void ProcessState(EPlayerState state) {
+        switch(state) {
+            case EPlayerState.Idle:
+            case EPlayerState.Moving:
+                Move();
+                Jump();
+            break;
+            case EPlayerState.Jumping:
+                Move();
+            break;
+            case EPlayerState.OnWall:
+            break;
+        }
+    }
+
     private void Move() {
         float horizontalMovement = Input.GetAxis("Horizontal");
         m_normalizedHorizontalSpeed = horizontalMovement;
 
         if(horizontalMovement != 0) {
             spriteChild.localScale = new Vector3(Mathf.Sign(horizontalMovement) * Mathf.Abs(spriteChild.localScale.x), spriteChild.localScale.y, spriteChild.localScale.z);
+            m_currentState = EPlayerState.Moving;
+        } else {
+            m_currentState = EPlayerState.Idle;
         }
     }
 
@@ -153,6 +176,7 @@ public class PlayerController : MonoBehaviour
             m_groundedRemember = 0;
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
 
+            m_currentState = EPlayerState.Jumping;
             StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_goingUpScaleMultiplier));
         }
     }
