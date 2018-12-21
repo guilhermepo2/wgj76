@@ -567,6 +567,20 @@ public class CharacterController2D : MonoBehaviour
 		}
 	}
 
+	/* Check Collision With LEFT or RIGHT */
+	public bool IsColliding(Vector2 dir) {
+		Vector2 rayOrigin = (dir == Vector2.right) ? _raycastOrigins.bottomRight : _raycastOrigins.bottomLeft;
+		Vector2 ray;
+
+		for(var i = 0; i < totalHorizontalRays; i++) {
+			ray = new Vector2(rayOrigin.x, rayOrigin.y + i * _horizontalDistanceBetweenRays);
+			if(Physics2D.Raycast(ray, dir, _skinWidth * 5f, platformMask)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	#endregion
 
 }}

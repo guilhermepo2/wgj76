@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Jumping Handling")]
 	public float gravity = -25f;
+    public float onWallGravity = -1f;
     private float m_gravity;
 	public float inAirDamping = 5f;
 	public float jumpHeight = 3f;
@@ -19,6 +20,9 @@ public class PlayerController : MonoBehaviour
     public float cutJumpHeight = 0.5f;
     private float m_jumpPressedRemember;
     private float m_groundedRemember;
+    
+    // [Header("Wall Jumping Handling")]
+    private Vector2 m_wallJumpForce;
 
     [Header("Sprite Child")]
     public Transform spriteChild;
@@ -35,8 +39,8 @@ public class PlayerController : MonoBehaviour
 
     /* SCALE JUICING */
     private Vector2 m_originalScale;
-    private Vector2 m_goingUpScaleMultiplier = new Vector2(0.8f, 1.2f);
-    private Vector2 m_groundingScaleMultiplier = new Vector2(1.2f, 0.8f);
+    private Vector2 m_goingUpScaleMultiplier = new Vector2(0.6f, 1.4f);
+    private Vector2 m_groundingScaleMultiplier = new Vector2(1.4f, 0.6f);
 
     public enum EPlayerState {
         Idle,
@@ -96,6 +100,7 @@ public class PlayerController : MonoBehaviour
             m_groundedRemember = groundedRememberTime;
             m_velocity.y = 0;
             m_currentState = EPlayerState.Idle;
+            m_gravity = gravity;
 
             if(!m_controller.collisionState.wasGroundedLastFrame) {
                 StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_groundingScaleMultiplier));
@@ -110,22 +115,12 @@ public class PlayerController : MonoBehaviour
 		m_velocity.x = Mathf.Lerp( m_velocity.x, m_normalizedHorizontalSpeed * runSpeed, Time.deltaTime * smoothedMovementFactor );
 
 		// apply gravity before moving
-        // m_velocity.y += gravity * Time.deltaTime;
+        m_velocity.y += gravity * Time.deltaTime;
         
         /* limiting gravity */
-        m_velocity.y = Mathf.Max(m_gravity, m_velocity.y + (m_gravity * Time.deltaTime + (.5f * m_gravity * (Time.deltaTime * Time.deltaTime))));
-
-		// if holding down bump up our movement amount and turn off one way platform detection for a frame.
-		// this lets us jump down through one way platforms
-		if( m_controller.isGrounded && Input.GetKey( KeyCode.DownArrow ) )
-		{
-			m_velocity.y *= 3f;
-			m_controller.ignoreOneWayPlatformsThisFrame = true;
-		}
+        // m_velocity.y = Mathf.Max(m_gravity, m_velocity.y + (m_gravity * Time.deltaTime + (.5f * m_gravity * (Time.deltaTime * Time.deltaTime))));
 
 		m_controller.move( m_velocity * Time.deltaTime );
-
-		// grab our current _velocity to use as a base for all calculations
 		m_velocity = m_controller.velocity;
 	}
 
@@ -138,8 +133,12 @@ public class PlayerController : MonoBehaviour
             break;
             case EPlayerState.Jumping:
                 Move();
+                // StickToWall();
+                WallJump();
             break;
             case EPlayerState.OnWall:
+                UnStickToWall();
+                WallJump();
             break;
         }
     }
@@ -150,9 +149,46 @@ public class PlayerController : MonoBehaviour
 
         if(horizontalMovement != 0) {
             spriteChild.localScale = new Vector3(Mathf.Sign(horizontalMovement) * Mathf.Abs(spriteChild.localScale.x), spriteChild.localScale.y, spriteChild.localScale.z);
-            m_currentState = EPlayerState.Moving;
-        } else {
-            m_currentState = EPlayerState.Idle;
+        }
+    }
+
+    private void StickToWall() {
+        float horizontalMovementValue = Input.GetAxis("Horizontal");
+
+        if(horizontalMovementValue == 0) return;
+
+        if(m_controller.IsColliding(Vector2.right) && Mathf.Sign(horizontalMovementValue) == 1 ||
+        (m_controller.IsColliding(Vector2.left) && Mathf.Sign(horizontalMovementValue) == -1) ) {
+            // Debug.Log("Player should stick to wall");
+            m_velocity = Vector2.zero;
+            m_gravity = onWallGravity;
+            m_currentState = EPlayerState.OnWall;
+        }
+    }
+
+    private void UnStickToWall() {
+        float horizontalMovementValue = Input.GetAxis("Horizontal");
+
+        if(horizontalMovementValue == 0) {
+            m_gravity = gravity;
+            m_currentState = EPlayerState.Jumping;
+        }
+    }
+
+    private void WallJump() {
+        bool isColliding = (m_controller.IsColliding(Vector2.right) || m_controller.IsColliding(Vector2.left));
+        bool isJumping = Input.GetButtonDown("Jump");
+
+        if(isColliding && isJumping) {
+            m_gravity = gravity;
+
+            m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
+            m_velocity.x = -Mathf.Sign(spriteChild.localScale.x) * Mathf.Sqrt(75f * runSpeed);
+            
+            /* Updating Scale on Wall Jump */
+            spriteChild.localScale = new Vector3(Mathf.Sign(m_velocity.x) * Mathf.Abs(spriteChild.localScale.x), spriteChild.localScale.y, spriteChild.localScale.z);
+
+            m_currentState = EPlayerState.Jumping;
         }
     }
 
