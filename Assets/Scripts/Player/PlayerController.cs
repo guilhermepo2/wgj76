@@ -20,6 +20,9 @@ public class PlayerController : MonoBehaviour
     private float m_jumpPressedRemember;
     private float m_groundedRemember;
 
+    [Header("Sprite Child")]
+    public Transform spriteChild;
+
 	
     /* PRIVATE MEMBERS */
     [HideInInspector]
@@ -28,6 +31,11 @@ public class PlayerController : MonoBehaviour
 	private Prime31.CharacterController2D m_controller;
 	private RaycastHit2D m_lastControllerColliderHit;
 	private Vector3 m_velocity;
+
+    /* SCALE JUICING */
+    private Vector2 m_originalScale;
+    private Vector2 m_goingUpScaleMultiplier = new Vector2(0.8f, 1.2f);
+    private Vector2 m_groundingScaleMultiplier = new Vector2(1.2f, 0.8f);
 
     public enum EPlayerState {
         Idle,
@@ -48,6 +56,7 @@ public class PlayerController : MonoBehaviour
 
         /* Setting Up Gravity */
         m_gravity = gravity;
+        m_originalScale = transform.localScale;
 	}
 
 
@@ -81,19 +90,23 @@ public class PlayerController : MonoBehaviour
 		if( m_controller.isGrounded ) {
             m_groundedRemember = groundedRememberTime;
             m_velocity.y = 0;
+
+            if(!m_controller.collisionState.wasGroundedLastFrame) {
+                StartCoroutine(ChangeScaleRoutine(transform.localScale * m_groundingScaleMultiplier));
+            }
         }
 
 		if( Input.GetKey( KeyCode.RightArrow ) )
 		{
 			m_normalizedHorizontalSpeed = 1;
-			if( transform.localScale.x < 0f )
-				transform.localScale = new Vector3( -transform.localScale.x, transform.localScale.y, transform.localScale.z );
+			if( spriteChild.localScale.x < 0f )
+				spriteChild.localScale = new Vector3( -spriteChild.localScale.x, spriteChild.localScale.y, spriteChild.localScale.z );
 		}
 		else if( Input.GetKey( KeyCode.LeftArrow ) )
 		{
 			m_normalizedHorizontalSpeed = -1;
-			if( transform.localScale.x > 0f )
-				transform.localScale = new Vector3( -transform.localScale.x, transform.localScale.y, transform.localScale.z );
+			if( spriteChild.localScale.x > 0f )
+				spriteChild.localScale = new Vector3( -spriteChild.localScale.x, spriteChild.localScale.y, spriteChild.localScale.z );
 		}
 		else
 		{
@@ -143,7 +156,15 @@ public class PlayerController : MonoBehaviour
             m_jumpPressedRemember = 0;
             m_groundedRemember = 0;
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
+
+            StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_goingUpScaleMultiplier));
         }
+    }
+
+    private IEnumerator ChangeScaleRoutine(Vector2 scale) {
+        spriteChild.localScale = scale;
+        yield return new WaitForSeconds(0.09f);
+        spriteChild.localScale = new Vector2(Mathf.Sign(transform.localScale.x) * m_originalScale.x, m_originalScale.y);
     }
 
 }
