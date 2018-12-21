@@ -29,6 +29,7 @@ public class PlayerController : MonoBehaviour
 	private float m_normalizedHorizontalSpeed = 0;
 
 	private Prime31.CharacterController2D m_controller;
+    private Animator m_animator;
 	private RaycastHit2D m_lastControllerColliderHit;
 	private Vector3 m_velocity;
 
@@ -56,7 +57,8 @@ public class PlayerController : MonoBehaviour
 
         /* Setting Up Gravity */
         m_gravity = gravity;
-        m_originalScale = transform.localScale;
+        m_originalScale = spriteChild.localScale;
+        m_animator = spriteChild.GetComponent<Animator>();
 	}
 
 
@@ -92,28 +94,13 @@ public class PlayerController : MonoBehaviour
             m_velocity.y = 0;
 
             if(!m_controller.collisionState.wasGroundedLastFrame) {
-                StartCoroutine(ChangeScaleRoutine(transform.localScale * m_groundingScaleMultiplier));
+                StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_groundingScaleMultiplier));
             }
         }
 
-		if( Input.GetKey( KeyCode.RightArrow ) )
-		{
-			m_normalizedHorizontalSpeed = 1;
-			if( spriteChild.localScale.x < 0f )
-				spriteChild.localScale = new Vector3( -spriteChild.localScale.x, spriteChild.localScale.y, spriteChild.localScale.z );
-		}
-		else if( Input.GetKey( KeyCode.LeftArrow ) )
-		{
-			m_normalizedHorizontalSpeed = -1;
-			if( spriteChild.localScale.x > 0f )
-				spriteChild.localScale = new Vector3( -spriteChild.localScale.x, spriteChild.localScale.y, spriteChild.localScale.z );
-		}
-		else
-		{
-			m_normalizedHorizontalSpeed = 0;
-		}
-
+        Move();
         Jump();
+        AnimationHandling();
 
 
 		// apply horizontal speed smoothing it. dont really do this with Lerp. Use SmoothDamp or something that provides more control
@@ -136,6 +123,15 @@ public class PlayerController : MonoBehaviour
 		// grab our current _velocity to use as a base for all calculations
 		m_velocity = m_controller.velocity;
 	}
+
+    private void Move() {
+        float horizontalMovement = Input.GetAxis("Horizontal");
+        m_normalizedHorizontalSpeed = horizontalMovement;
+
+        if(horizontalMovement != 0) {
+            spriteChild.localScale = new Vector3(Mathf.Sign(horizontalMovement) * Mathf.Abs(spriteChild.localScale.x), spriteChild.localScale.y, spriteChild.localScale.z);
+        }
+    }
 
     private void Jump() {
         m_groundedRemember -= Time.deltaTime;
@@ -161,10 +157,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void AnimationHandling() {
+        if(m_velocity.y > 0) {
+            m_animator.Play("Jumping");
+        } else if(m_velocity.y < 0) {
+            m_animator.Play("Falling");
+        } else if(m_normalizedHorizontalSpeed != 0) {
+            m_animator.Play("Running");
+        } else {
+            m_animator.Play("Idle");
+        }
+    }
+
     private IEnumerator ChangeScaleRoutine(Vector2 scale) {
         spriteChild.localScale = scale;
         yield return new WaitForSeconds(0.09f);
-        spriteChild.localScale = new Vector2(Mathf.Sign(transform.localScale.x) * m_originalScale.x, m_originalScale.y);
+        spriteChild.localScale = new Vector2(Mathf.Sign(spriteChild.localScale.x) * m_originalScale.x, m_originalScale.y);
     }
 
 }
