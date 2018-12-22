@@ -134,6 +134,7 @@ public class PlayerController : MonoBehaviour
             case EPlayerState.Jumping:
                 Move();
                 // StickToWall();
+                CutJump();
                 WallJump();
             break;
             case EPlayerState.OnWall:
@@ -177,18 +178,27 @@ public class PlayerController : MonoBehaviour
 
     private void WallJump() {
         bool isColliding = (m_controller.IsColliding(Vector2.right) || m_controller.IsColliding(Vector2.left));
+        int dir = m_controller.IsColliding(Vector2.right) ? -1 : 1;
         bool isJumping = Input.GetButtonDown("Jump");
 
         if(isColliding && isJumping) {
             m_gravity = gravity;
 
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
-            m_velocity.x = -Mathf.Sign(spriteChild.localScale.x) * Mathf.Sqrt(75f * runSpeed);
+            m_velocity.x = dir * Mathf.Sqrt(75f * runSpeed);
             
             /* Updating Scale on Wall Jump */
             spriteChild.localScale = new Vector3(Mathf.Sign(m_velocity.x) * Mathf.Abs(spriteChild.localScale.x), spriteChild.localScale.y, spriteChild.localScale.z);
 
             m_currentState = EPlayerState.Jumping;
+        }
+    }
+
+    private void CutJump() {
+        if(Input.GetButtonUp("Jump")) {
+            if(m_velocity.y > 0) {
+                m_velocity.y = m_velocity.y * cutJumpHeight;
+            }
         }
     }
 
@@ -198,12 +208,6 @@ public class PlayerController : MonoBehaviour
 
         if(Input.GetButtonDown("Jump")) {
             m_jumpPressedRemember = jumpPressedRememberTime;
-        }
-
-        if(Input.GetButtonUp("Jump")) {
-            if(m_velocity.y > 0) {
-                m_velocity.y = m_velocity.y * cutJumpHeight;
-            }
         }
 
         /* Jumping */
