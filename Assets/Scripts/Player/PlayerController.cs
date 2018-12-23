@@ -24,8 +24,8 @@ public class PlayerController : MonoBehaviour
     private const float m_wallJumpHorizontalMultiplier = 25f;
     
     /* Dash */
-    private const float m_dashTime = .2f;
-    private const float dashSpeed = 12f;
+    private const float m_dashTime = .15f;
+    private const float dashSpeed = 16f;
 
 
 
@@ -221,10 +221,20 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private IEnumerator DashRoutine(Vector2 dir) {
-        Debug.Log("Dash Dir: " + dir);
-        // yield return null;
-        Vector2 dashVelocity = dir * dashSpeed;
+    private IEnumerator DashRoutine() {
+        yield return null;
+
+        float horizontalMovement = Input.GetAxisRaw("Horizontal");
+        float verticalMovement = Input.GetAxisRaw("Vertical");
+        Vector2 dir;
+
+        if(horizontalMovement == 0 && verticalMovement == 0) {
+            dir = new Vector2(Mathf.Sign(spriteChild.localScale.x), 0f);
+        } else {
+            dir = new Vector2(horizontalMovement, verticalMovement);   
+        }
+
+        Vector2 dashVelocity = dir.normalized * dashSpeed;
         m_velocity = dashVelocity;
         m_currentState = EPlayerState.Dashing;
         m_gravity = 0;
@@ -236,19 +246,8 @@ public class PlayerController : MonoBehaviour
     }
 
     private void Dash() {
-        float horizontalMovement = Input.GetAxisRaw("Horizontal");
-        float verticalMovement = Input.GetAxisRaw("Vertical");
-        Vector2 dir;
-
-        if(horizontalMovement == 0 && verticalMovement == 0) {
-            dir = new Vector2(Mathf.Sign(spriteChild.localScale.x), 0f);
-        } else {
-            dir = new Vector2(horizontalMovement, verticalMovement);   
-        }
-        // do some fancy stuff here to project the dir vector
-
         if(Input.GetButtonDown("Dash")) {
-            StartCoroutine(DashRoutine(dir.normalized));
+            StartCoroutine(DashRoutine());
         }
     }
 
