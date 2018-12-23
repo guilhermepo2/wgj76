@@ -5,14 +5,14 @@ using System.Collections;
 public class PlayerController : MonoBehaviour
 {
     /* Movement Handling */
-    private const float runSpeed = 8f;
-    private const float groundDamping = 30f;
+    private const float runSpeed = 6f;
+    private const float groundDamping = 75f;
 
     /* Jumping Handling */
 	private const float gravity = -50f;
     private const float onWallGravity = -1f;
 	private const float inAirDamping = 5f;
-	private const float jumpHeight = 3f;
+	private const float jumpHeight = 2.75f;
     private const float jumpPressedRememberTime = 0.1f;
     private const float groundedRememberTime = 0.1f;
     private const float cutJumpHeight = 0.5f;
@@ -24,7 +24,8 @@ public class PlayerController : MonoBehaviour
     private const float m_wallJumpHorizontalMultiplier = 25f;
     
     /* Dash */
-    private const float m_dashTime = 1.5f;
+    private const float m_dashTime = .2f;
+    private const float dashSpeed = 12f;
 
 
 
@@ -116,11 +117,24 @@ public class PlayerController : MonoBehaviour
         AnimationHandling();
 
 		// apply horizontal speed smoothing it. dont really do this with Lerp. Use SmoothDamp or something that provides more control
-		var smoothedMovementFactor = m_controller.isGrounded ? groundDamping : inAirDamping;
+        var smoothedMovementFactor = m_controller.isGrounded ? groundDamping : inAirDamping;
+        switch(m_currentState) {
+            case EPlayerState.Idle:
+            case EPlayerState.Moving:
+                smoothedMovementFactor = groundDamping;
+            break;
+            case EPlayerState.Jumping:
+                smoothedMovementFactor = inAirDamping;
+            break;
+            case EPlayerState.Dashing:
+                smoothedMovementFactor = 0;
+            break;
+        }
+
 		m_velocity.x = Mathf.Lerp( m_velocity.x, m_normalizedHorizontalSpeed * runSpeed, Time.deltaTime * smoothedMovementFactor );
 
 		// apply gravity before moving
-        m_velocity.y += gravity * Time.deltaTime;
+        m_velocity.y += m_gravity * Time.deltaTime;
         
         /* limiting gravity */
         // m_velocity.y = Mathf.Max(m_gravity, m_velocity.y + (m_gravity * Time.deltaTime + (.5f * m_gravity * (Time.deltaTime * Time.deltaTime))));
@@ -140,8 +154,8 @@ public class PlayerController : MonoBehaviour
                 Move();
                 // StickToWall();
                 CutJump();
-                Dash();
                 WallJump();
+                Dash();
             break;
             case EPlayerState.OnWall:
                 UnStickToWall();
@@ -166,7 +180,6 @@ public class PlayerController : MonoBehaviour
 
         if(m_controller.IsColliding(Vector2.right) && Mathf.Sign(horizontalMovementValue) == 1 ||
         (m_controller.IsColliding(Vector2.left) && Mathf.Sign(horizontalMovementValue) == -1) ) {
-            // Debug.Log("Player should stick to wall");
             m_velocity = Vector2.zero;
             m_gravity = onWallGravity;
             m_currentState = EPlayerState.OnWall;
@@ -208,12 +221,34 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private IEnumerator DashRoutine(Vector2 dir) {
+        Debug.Log("Dash Dir: " + dir);
+        // yield return null;
+        Vector2 dashVelocity = dir * dashSpeed;
+        m_velocity = dashVelocity;
+        m_currentState = EPlayerState.Dashing;
+        m_gravity = 0;
+
+        yield return new WaitForSeconds(m_dashTime);
+        m_gravity = gravity;
+        m_currentState = EPlayerState.Jumping;
+
+    }
+
     private void Dash() {
         float horizontalMovement = Input.GetAxisRaw("Horizontal");
         float verticalMovement = Input.GetAxisRaw("Vertical");
+        Vector2 dir;
 
-        if(Input.GetButtonDown("Jump")) {
-            // DASH!
+        if(horizontalMovement == 0 && verticalMovement == 0) {
+            dir = new Vector2(Mathf.Sign(spriteChild.localScale.x), 0f);
+        } else {
+            dir = new Vector2(horizontalMovement, verticalMovement);   
+        }
+        // do some fancy stuff here to project the dir vector
+
+        if(Input.GetButtonDown("Dash")) {
+            StartCoroutine(DashRoutine(dir.normalized));
         }
     }
 
