@@ -4,25 +4,29 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movement Handling")]
-    public float runSpeed = 8f;
-    public float groundDamping = 20f; // how fast do we change direction? higher means faster
+    /* Movement Handling */
+    private const float runSpeed = 8f;
+    private const float groundDamping = 30f;
 
-    [Header("Jumping Handling")]
-	public float gravity = -25f;
-    public float onWallGravity = -1f;
+    /* Jumping Handling */
+	private const float gravity = -50f;
+    private const float onWallGravity = -1f;
+	private const float inAirDamping = 5f;
+	private const float jumpHeight = 3f;
+    private const float jumpPressedRememberTime = 0.1f;
+    private const float groundedRememberTime = 0.1f;
+    private const float cutJumpHeight = 0.5f;
     private float m_gravity;
-	public float inAirDamping = 5f;
-	public float jumpHeight = 3f;
-    /* Improving on Jump */
-    public float jumpPressedRememberTime = 0.1f;
-    public float groundedRememberTime = 0.1f;
-    public float cutJumpHeight = 0.5f;
     private float m_jumpPressedRemember;
     private float m_groundedRemember;
     
-    // [Header("Wall Jumping Handling")]
-    private Vector2 m_wallJumpForce;
+    /* Wall Jump */
+    private const float m_wallJumpHorizontalMultiplier = 25f;
+    
+    /* Dash */
+    private const float m_dashTime = 1.5f;
+
+
 
     [Header("Sprite Child")]
     public Transform spriteChild;
@@ -46,6 +50,7 @@ public class PlayerController : MonoBehaviour
         Idle,
         Moving,
         Jumping,
+        Dashing,
         OnWall
     }
 
@@ -135,6 +140,7 @@ public class PlayerController : MonoBehaviour
                 Move();
                 // StickToWall();
                 CutJump();
+                Dash();
                 WallJump();
             break;
             case EPlayerState.OnWall:
@@ -185,7 +191,7 @@ public class PlayerController : MonoBehaviour
             m_gravity = gravity;
 
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
-            m_velocity.x = dir * Mathf.Sqrt(75f * runSpeed);
+            m_velocity.x = dir * Mathf.Sqrt(m_wallJumpHorizontalMultiplier * runSpeed);
             
             /* Updating Scale on Wall Jump */
             spriteChild.localScale = new Vector3(Mathf.Sign(m_velocity.x) * Mathf.Abs(spriteChild.localScale.x), spriteChild.localScale.y, spriteChild.localScale.z);
@@ -199,6 +205,15 @@ public class PlayerController : MonoBehaviour
             if(m_velocity.y > 0) {
                 m_velocity.y = m_velocity.y * cutJumpHeight;
             }
+        }
+    }
+
+    private void Dash() {
+        float horizontalMovement = Input.GetAxisRaw("Horizontal");
+        float verticalMovement = Input.GetAxisRaw("Vertical");
+
+        if(Input.GetButtonDown("Jump")) {
+            // DASH!
         }
     }
 
