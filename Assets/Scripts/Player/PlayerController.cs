@@ -27,7 +27,11 @@ public class PlayerController : MonoBehaviour
     private const float m_dashTime = .15f;
     private const float dashSpeed = 16f;
 
-
+    [Header("Sound Effects")]
+    public AudioClip jumpClip;
+    public AudioClip groundedClip;
+    public AudioClip dashClip;
+    private AudioSource m_audioSource;
 
     [Header("Sprite Child")]
     public Transform spriteChild;
@@ -72,6 +76,7 @@ public class PlayerController : MonoBehaviour
         m_originalScale = spriteChild.localScale;
         m_animator = spriteChild.GetComponent<Animator>();
         m_currentState = EPlayerState.Idle;
+        m_audioSource = GetComponent<AudioSource>();
 	}
 
 
@@ -109,6 +114,9 @@ public class PlayerController : MonoBehaviour
             m_gravity = gravity;
 
             if(!m_controller.collisionState.wasGroundedLastFrame) {
+                if(m_audioSource && jumpClip) {
+                    m_audioSource.PlayOneShot(groundedClip);
+                }
                 StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_groundingScaleMultiplier));
             }
         }
@@ -205,6 +213,10 @@ public class PlayerController : MonoBehaviour
 
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
             m_velocity.x = dir * Mathf.Sqrt(m_wallJumpHorizontalMultiplier * runSpeed);
+
+            if(m_audioSource && jumpClip) {
+                m_audioSource.PlayOneShot(jumpClip);
+            }
             
             /* Updating Scale on Wall Jump */
             spriteChild.localScale = new Vector3(Mathf.Sign(m_velocity.x) * Mathf.Abs(spriteChild.localScale.x), spriteChild.localScale.y, spriteChild.localScale.z);
@@ -223,6 +235,10 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator DashRoutine() {
         yield return null;
+
+        if(m_audioSource && dashClip) {
+            m_audioSource.PlayOneShot(dashClip);
+        }
 
         float horizontalMovement = Input.GetAxisRaw("Horizontal");
         float verticalMovement = Input.GetAxisRaw("Vertical");
@@ -264,6 +280,10 @@ public class PlayerController : MonoBehaviour
             m_jumpPressedRemember = 0;
             m_groundedRemember = 0;
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
+
+            if(m_audioSource && jumpClip) {
+                m_audioSource.PlayOneShot(jumpClip);
+            }
 
             m_currentState = EPlayerState.Jumping;
             StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_goingUpScaleMultiplier));
