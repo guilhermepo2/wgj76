@@ -582,6 +582,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c08171d50a9c44c26b37c75e1fd6cb1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dustParticles: {fileID: 3504622988093774073, guid: 3066e481ba06a406a9bf10a28ce67679,
+    type: 3}
+  wallJumpLeftParticle: {fileID: 3504622988093774073, guid: 9dc8aad44e4864c0bbf371f4e5e60e09,
+    type: 3}
+  wallJumpRightParticle: {fileID: 3504622988093774073, guid: 29cf28c0cea834eef900ab60d2477896,
+    type: 3}
   jumpClip: {fileID: 8300000, guid: 8437db06fc53049c9946a330e5eb351b, type: 3}
   groundedClip: {fileID: 8300000, guid: 3984608272c304d05b67bd884d59fc9f, type: 3}
   dashClip: {fileID: 8300000, guid: af5aaaa33221a4e2abc273f07ab1b19c, type: 3}

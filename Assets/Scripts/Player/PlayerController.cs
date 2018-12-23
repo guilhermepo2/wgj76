@@ -27,6 +27,11 @@ public class PlayerController : MonoBehaviour
     private const float m_dashTime = .15f;
     private const float dashSpeed = 16f;
 
+    [Header("Dust Particles")]
+    public GameObject dustParticles;
+    public GameObject wallJumpLeftParticle;
+    public GameObject wallJumpRightParticle;
+
     [Header("Sound Effects")]
     public AudioClip jumpClip;
     public AudioClip groundedClip;
@@ -118,6 +123,9 @@ public class PlayerController : MonoBehaviour
                     m_audioSource.PlayOneShot(groundedClip);
                 }
                 StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_groundingScaleMultiplier));
+
+                /* Instantiate Dust Particles */
+                InstantiateDustParticle(dustParticles, transform.position + (Vector3.down / 2f));
             }
         }
 
@@ -214,6 +222,12 @@ public class PlayerController : MonoBehaviour
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
             m_velocity.x = dir * Mathf.Sqrt(m_wallJumpHorizontalMultiplier * runSpeed);
 
+            if(dir == 1) {
+                InstantiateDustParticle(wallJumpLeftParticle, transform.position + (Vector3.left / 4f));
+            } else if(dir == -1) {
+                InstantiateDustParticle(wallJumpRightParticle, transform.position + (Vector3.right / 4f));
+            }
+
             if(m_audioSource && jumpClip) {
                 m_audioSource.PlayOneShot(jumpClip);
             }
@@ -257,7 +271,13 @@ public class PlayerController : MonoBehaviour
         m_currentState = EPlayerState.Dashing;
         m_gravity = 0;
 
-        yield return new WaitForSeconds(m_dashTime);
+        
+        float fractionedTime = m_dashTime / 3f;
+        for(int i = 0; i < 3; i++) {
+            InstantiateDustParticle(dustParticles, transform.position);
+            yield return new WaitForSeconds(fractionedTime);
+        }
+
         m_gravity = gravity;
         m_currentState = EPlayerState.Jumping;
 
@@ -287,6 +307,8 @@ public class PlayerController : MonoBehaviour
                 m_audioSource.PlayOneShot(jumpClip);
             }
 
+            InstantiateDustParticle(dustParticles, transform.position + (Vector3.down / 2f));
+
             m_currentState = EPlayerState.Jumping;
             StartCoroutine(ChangeScaleRoutine(spriteChild.localScale * m_goingUpScaleMultiplier));
         }
@@ -308,6 +330,10 @@ public class PlayerController : MonoBehaviour
         spriteChild.localScale = scale;
         yield return new WaitForSeconds(0.09f);
         spriteChild.localScale = new Vector2(Mathf.Sign(spriteChild.localScale.x) * m_originalScale.x, m_originalScale.y);
+    }
+
+    private void InstantiateDustParticle(GameObject particle, Vector2 position) {
+        Instantiate(particle, position, Quaternion.identity).GetComponent<ParticleSystem>().Play();
     }
 
 }
