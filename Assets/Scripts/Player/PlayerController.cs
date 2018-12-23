@@ -240,6 +240,8 @@ public class PlayerController : MonoBehaviour
             m_audioSource.PlayOneShot(dashClip);
         }
 
+        Screenshake.instance.ShakeCamera(0.2f);
+
         float horizontalMovement = Input.GetAxisRaw("Horizontal");
         float verticalMovement = Input.GetAxisRaw("Vertical");
         Vector2 dir;
