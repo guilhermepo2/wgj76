@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     private const float onWallGravity = -1f;
 	private const float inAirDamping = 5f;
 	private const float jumpHeight = 2.75f;
-    private const float jumpPressedRememberTime = 0.1f;
+    private const float jumpPressedRememberTime = 0.15f;
     private const float groundedRememberTime = 0.1f;
     private const float cutJumpHeight = 0.5f;
     private float m_gravity;
