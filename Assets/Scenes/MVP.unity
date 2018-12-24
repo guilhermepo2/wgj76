@@ -387,7 +387,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 995483852}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10.61, y: -2.73, z: 0.011962891}
+  m_LocalPosition: {x: -4.45, y: -1.73, z: 0.011962891}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2095295484}
@@ -410,6 +410,7 @@ MonoBehaviour:
     sentences:
     - Testing Audio...
     dialogueClip: {fileID: 0}
+  toPositionDuringDialogue: {fileID: 2095295484}
 --- !u!1 &1094635353
 GameObject:
   m_ObjectHideFlags: 0
@@ -12326,7 +12327,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2095295483}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.52, y: 1.52, z: 0}
+  m_LocalPosition: {x: 7.29, y: 5.39, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 995483854}

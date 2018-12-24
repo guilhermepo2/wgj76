@@ -61,7 +61,8 @@ public class PlayerController : MonoBehaviour
         Moving,
         Jumping,
         Dashing,
-        OnWall
+        OnWall,
+        WatchingDialogue,
     }
 
     private EPlayerState m_currentState;
@@ -98,15 +99,22 @@ public class PlayerController : MonoBehaviour
 	}
 
 
-	void onTriggerEnterEvent( Collider2D col )
-	{
-		Debug.Log( "onTriggerEnterEvent: " + col.gameObject.name );
+	void onTriggerEnterEvent( Collider2D col ) {
+		IStartDialogue dialogue = col.GetComponent<IStartDialogue>();
+
+        if(dialogue != null) {
+            dialogue.StartDialogue();
+        }
 	}
 
 
 	void onTriggerExitEvent( Collider2D col )
 	{
-		Debug.Log( "onTriggerExitEvent: " + col.gameObject.name );
+		IEndDialogue endDialogue = col.GetComponent<IEndDialogue>();
+
+        if(endDialogue != null) {
+            endDialogue.EndDialogue();
+        }
 	}
 
 	#endregion

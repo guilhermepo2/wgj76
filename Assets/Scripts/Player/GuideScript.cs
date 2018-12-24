@@ -7,9 +7,15 @@ public class GuideScript : MonoBehaviour
     public Transform toFollow;
     private float m_internalAngle;
     private const float followSpeed = 5f;
+    public Transform overrideFollow = null;
 
     void Update() {
         Vector3 tempPosition = toFollow.position;
+
+        if(overrideFollow != null) {
+            tempPosition = overrideFollow.position;
+        }
+
         tempPosition.y += (Mathf.Sin(m_internalAngle * Mathf.Deg2Rad) / 4f);
         
         m_internalAngle = ((m_internalAngle + 1f) % 360);
