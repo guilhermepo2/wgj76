@@ -20,4 +20,8 @@ public class GuideScript : MonoBehaviour
 
         transform.position = Vector3.Lerp(transform.position, tempPosition, t);
     }
+
+    void OnTriggerEnter2D() {
+        Debug.Log("Guide is on Trigger");
+    }
 }
