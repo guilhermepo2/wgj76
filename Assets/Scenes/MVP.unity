@@ -409,6 +409,7 @@ MonoBehaviour:
   dialogue:
     sentences:
     - Testing Audio...
+    - Testing Second Sentence
     dialogueClip: {fileID: 0}
   toPositionDuringDialogue: {fileID: 2095295484}
 --- !u!1 &1094635353

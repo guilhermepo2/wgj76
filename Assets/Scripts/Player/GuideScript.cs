@@ -21,7 +21,6 @@ public class GuideScript : MonoBehaviour
         m_internalAngle = ((m_internalAngle + 1f) % 360);
 
         float t = Mathf.Clamp(followSpeed * Time.deltaTime, 0, 1);
-        // t = Interpolation.SmoothStep(t);
         t = Interpolation.EaseIn(t);
 
         transform.position = Vector3.Lerp(transform.position, tempPosition, t);
