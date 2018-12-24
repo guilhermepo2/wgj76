@@ -69,6 +69,9 @@ public class PlayerController : MonoBehaviour
 
 	void Awake()
 	{
+        /* IMPORTANT */
+        Application.targetFrameRate = 60;
+
 		m_controller = GetComponent<Prime31.CharacterController2D>();
 
 		// listen to some events for illustration purposes
