@@ -89,6 +89,7 @@ public class PlayerController : MonoBehaviour
         m_animator = spriteChild.GetComponent<Animator>();
         m_currentState = EPlayerState.Idle;
         m_audioSource = GetComponent<AudioSource>();
+        m_lastCheckpoint = transform.position; 
 	}
 
 
@@ -115,7 +116,12 @@ public class PlayerController : MonoBehaviour
         }
 
         if(col.gameObject.layer == LayerMask.NameToLayer("Kill")) {
-            Debug.Log("Player touched Kill Layer!");
+            /* Count Death */
+            transform.position = (m_lastCheckpoint + Vector2.up);
+        }
+
+        if(col.gameObject.layer == LayerMask.NameToLayer("Checkpoints")) {
+            m_lastCheckpoint = transform.position;
         }
 	}
 
