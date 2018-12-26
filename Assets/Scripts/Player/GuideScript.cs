@@ -16,6 +16,10 @@ public class GuideScript : MonoBehaviour
             tempPosition = overrideFollow.position;
         }
 
+        /* dunno what was happening... */
+        tempPosition.z = 0f;
+        // /\ nice
+
         tempPosition.y += (Mathf.Sin(m_internalAngle * Mathf.Deg2Rad) / 4f);
         
         m_internalAngle = ((m_internalAngle + 1f) % 360);

@@ -56,6 +56,9 @@ public class PlayerController : MonoBehaviour
     private Vector2 m_goingUpScaleMultiplier = new Vector2(0.6f, 1.4f);
     private Vector2 m_groundingScaleMultiplier = new Vector2(1.4f, 0.6f);
 
+    /* CHECKPOINT */
+    private Vector2 m_lastCheckpoint;
+
     public enum EPlayerState {
         Idle,
         Moving,
@@ -101,15 +104,25 @@ public class PlayerController : MonoBehaviour
 
 	void onTriggerEnterEvent( Collider2D col ) {
 		IStartDialogue dialogue = col.GetComponent<IStartDialogue>();
+        ITransitionCamera transition = col.GetComponentInParent<ITransitionCamera>();
 
         if(dialogue != null) {
             dialogue.StartDialogue();
+        }
+
+        if(transition != null) {
+            transition.TransitionCamera();
+        }
+
+        if(col.gameObject.layer == LayerMask.NameToLayer("Kill")) {
+            Debug.Log("Player touched Kill Layer!");
         }
 	}
 
 
 	void onTriggerExitEvent( Collider2D col )
 	{
+        Debug.Log("Exit Collider");
 		IEndDialogue endDialogue = col.GetComponent<IEndDialogue>();
 
         if(endDialogue != null) {
@@ -265,7 +278,9 @@ public class PlayerController : MonoBehaviour
             m_audioSource.PlayOneShot(dashClip);
         }
 
-        Screenshake.instance.ShakeCamera(0.2f);
+        /* CineMachine camera */
+        // Screenshake.instance.ShakeCamera(0.2f);
+        CameraScript.instance.ShakeScreen(.05f);
 
         float horizontalMovement = Input.GetAxisRaw("Horizontal");
         float verticalMovement = Input.GetAxisRaw("Vertical");

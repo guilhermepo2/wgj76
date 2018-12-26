@@ -24,10 +24,12 @@ public class Screenshake : MonoBehaviour
     }
 
     private IEnumerator ShakeRoutine(float duration, float shakeAmplitude) {
-        Debug.Log("Shaking with " + shakeAmplitude);
+        Vector3 cameraPositionBeforeShake = transform.position;
+        yield return null;
         m_perlin.m_AmplitudeGain = shakeAmplitude;
         yield return new WaitForSeconds(duration);
         ResetCamera();
+        transform.position = cameraPositionBeforeShake;
     }
 
     public void ShakeCamera(float duration) {
