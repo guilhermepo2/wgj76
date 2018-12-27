@@ -106,6 +106,7 @@ public class PlayerController : MonoBehaviour
 	void onTriggerEnterEvent( Collider2D col ) {
 		IStartDialogue dialogue = col.GetComponent<IStartDialogue>();
         ITransitionCamera transition = col.GetComponentInParent<ITransitionCamera>();
+        IInteract interact = col.GetComponent<IInteract>();
 
         if(dialogue != null) {
             dialogue.StartDialogue();
@@ -115,8 +116,13 @@ public class PlayerController : MonoBehaviour
             transition.TransitionCamera();
         }
 
+        if(interact != null) {
+            interact.Interact();
+        }
+
         if(col.gameObject.layer == LayerMask.NameToLayer("Kill")) {
-            /* Count Death */
+            /* Death Count Statistics */
+            StatisticsCollector.instance.deathCount++;
             transform.position = (m_lastCheckpoint + Vector2.up);
         }
 
@@ -247,6 +253,9 @@ public class PlayerController : MonoBehaviour
         bool isJumping = Input.GetButtonDown("Jump");
 
         if(isColliding && isJumping) {
+            /* Jump Statistics */
+            StatisticsCollector.instance.jumpCount++;
+
             m_gravity = gravity;
 
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
@@ -317,6 +326,9 @@ public class PlayerController : MonoBehaviour
 
     private void Dash() {
         if(Input.GetButtonDown("Dash")) {
+            /* Dash Statistics */
+            StatisticsCollector.instance.dashCount++;
+
             StartCoroutine(DashRoutine());
         }
     }
@@ -331,6 +343,9 @@ public class PlayerController : MonoBehaviour
 
         /* Jumping */
         if((m_groundedRemember > 0) && (m_jumpPressedRemember > 0)) {
+            /* Jump Statistics */
+            StatisticsCollector.instance.jumpCount++;
+
             m_jumpPressedRemember = 0;
             m_groundedRemember = 0;
             m_velocity.y = Mathf.Sqrt(2f * jumpHeight * -m_gravity);
