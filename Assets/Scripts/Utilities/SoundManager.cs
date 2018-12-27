@@ -14,6 +14,7 @@ public class SoundManager : MonoBehaviour {
 			instance = this;
 			DontDestroyOnLoad(gameObject);
 		} else {
+			SoundManager.instance.ChangeMusicWithoutFade(musicSource.clip);
 			Destroy(gameObject);
 		}
 	}
