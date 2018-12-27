@@ -42,4 +42,12 @@ public class SoundManager : MonoBehaviour {
 		
 		sfxSource.PlayOneShot(clip);
 	}
+
+	public void ChangeMusicSourceVolume(float volume) {
+		musicSource.volume = volume;
+	}
+
+	public void ChangeSfxSourceVolume(float volume) {
+		sfxSource.volume = volume;
+	}
 }
